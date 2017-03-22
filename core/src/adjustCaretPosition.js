@@ -9,7 +9,8 @@ export default function adjustCaretPosition({
   placeholderChar,
   placeholder,
   indexesOfPipedChars = defaultArray,
-  caretTrapIndexes = defaultArray
+  caretTrapIndexes = defaultArray,
+  guide
 }) {
   if (currentCaretPosition === 0) { return 0 }
 
@@ -43,20 +44,26 @@ export default function adjustCaretPosition({
   // This works fine for most cases.
   if (isPartialMultiCharEdit) { return currentCaretPosition }
 
+  let startingSearchIndex = currentCaretPosition - editLength
+
   // For a mask like (111), if the `previousConformedValue` is (1__) and user attempts to enter
   // `f` so the `rawValue` becomes (1f__), the new `conformedValue` would be (1__), which is the
   // same as the original `previousConformedValue`. We handle this case differently for caret
   // positioning.
-  const possiblyHasRejectedChar = isAddition && (
+  let possiblyHasRejectedChar = isAddition && (
     previousConformedValue === conformedValue ||
-    conformedValue === placeholder
+    placeholder === conformedValue
   )
 
-  let startingSearchIndex = 0
+  // If rawValue doesn't contain placeholder characters, then all fields are filled with correct values.
+  // In this case value wasn't rejected, we just ran out of bounds.
+  if (guide && possiblyHasRejectedChar && conformedValue !== placeholder && rawValue.indexOf(placeholderChar) < 0) {
+    possiblyHasRejectedChar = false
+  }
 
-  if (possiblyHasRejectedChar) {
-    startingSearchIndex = currentCaretPosition - editLength
-  } else {
+
+  if (!possiblyHasRejectedChar) {
+    startingSearchIndex = 0
     // At this point in the algorithm, we want to know where the caret is right before the raw input
     // has been conformed, and then see if we can find that same spot in the conformed input.
     //

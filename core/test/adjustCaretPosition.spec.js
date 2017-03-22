@@ -47,9 +47,25 @@ describe('adjustCaretPosition', () => {
         ['(', /\d/, /\d/, /\d/, ')']
       ),
       placeholderChar,
-      currentCaretPosition: 2
+      currentCaretPosition: 2,
+      guide: true
     })).to.equal(2)
-  });
+  })
+
+  it('does not set the caret back when valid character has been entered and input ' +
+     'contain different characters', () => {
+    expect(adjustCaretPosition({
+      previousConformedValue: '(111) 555-5555',
+      conformedValue: '(111) 555-5555',
+      rawValue: '(111) 5555-5555',
+      placeholder: convertMaskToPlaceholder(
+        ['(', /\d/, /\d/, /\d/, ')', ' ', /\d/, /\d/, /\d/, '-', /\d/, /\d/, /\d/, /\d/]
+      ),
+      placeholderChar,
+      currentCaretPosition: 8,
+      guide: true
+    })).to.equal(8)
+  })
 
   it('moves the caret to the nearest placeholder character if the previous input and new ' +
     'conformed output are the same but the reverted position is not a ' +
